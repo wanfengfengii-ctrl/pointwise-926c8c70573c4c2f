@@ -1,0 +1,11 @@
+{
+  "device_id": "bench-a",
+  "shift_id": "day-shift",
+  "calibration": {"revision": "r1", "microliters_per_pulse": 2},
+  "later_calibration": {"revision": "r2", "microliters_per_pulse": 3},
+  "limit_microliters": 14,
+  "pulses_before_first_inspection": 7,
+  "inspection_actions": ["first-check", "zero-check"],
+  "stop_action": "end-of-shift",
+  "delivery_order": [3, 1, 2]
+}
