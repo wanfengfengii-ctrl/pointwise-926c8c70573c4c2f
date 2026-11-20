@@ -7,6 +7,7 @@ from station.meter.inspection import inspect
 from station.meter.session import SessionDirectory, count
 from station.meter.stop import stop
 from station.report.archive import REPORT_SCHEMA
+from station.report.handover import HANDOVER_SCHEMA
 from station.report.publish import publish
 from station.setup.calibration import CALIBRATION_SCHEMA
 from station.setup.devices import DEVICE_SCHEMA
@@ -48,7 +49,8 @@ class StationContext:
 
 def open_station(path, *, sessions=None, before_commit=None) -> StationContext:
     database = StationDatabase(path, before_commit=before_commit)
-    database.initialize(DEVICE_SCHEMA, CALIBRATION_SCHEMA, SHIFT_SCHEMA, INTAKE_SCHEMA, REPORT_SCHEMA)
+    database.initialize(DEVICE_SCHEMA, CALIBRATION_SCHEMA, SHIFT_SCHEMA, INTAKE_SCHEMA,
+                        REPORT_SCHEMA, HANDOVER_SCHEMA)
     if sessions is None:
         sessions = SessionDirectory()
     return StationContext(database, Registration(database, sessions), sessions)

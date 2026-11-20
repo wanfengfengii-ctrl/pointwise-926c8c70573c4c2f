@@ -5,6 +5,7 @@ from station.audit.recompute import recompute_report
 from station.audit.verification import VerificationError, verify_report
 from station.intake.store import EvidenceStore
 from station.report.archive import ReportArchive, SignedReport
+from station.report.handover import HandoverStore
 from station.setup.shifts import ShiftRegistry
 from station.setup.storage import StationDatabase
 
@@ -20,10 +21,19 @@ def readback(database: StationDatabase, report_number: str) -> ReadbackResult:
         raise VerificationError('report number must be a nonempty identifier')
     with database.read_snapshot() as conn:
         try:
-            report = ReportArchive(conn).find_by_number(report_number)
-            if report is None:
-                raise VerificationError(f'unknown report {report_number!r}')
-            provenance = resolve_provenance(report, EvidenceStore(conn))
+            archive = ReportArchive(conn)
+            report = archive.find_by_number(report_number)
+            if report is not None:
+                # Local station reports resolve against the station's own intake.
+                store = EvidenceStore(conn)
+            else:
+                # Accepted external reports keep their source originals and receipts.
+                handover_store = HandoverStore(conn)
+                report = handover_store.find_report_by_number(report_number)
+                if report is None:
+                    raise VerificationError(f'unknown report {report_number!r}')
+                store = handover_store
+            provenance = resolve_provenance(report, store)
             shift = ShiftRegistry(conn).find(report.identity.shift_id)
         except (ProvenanceError, VerificationError):
             raise
